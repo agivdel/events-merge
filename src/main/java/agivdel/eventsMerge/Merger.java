@@ -19,6 +19,9 @@ import java.util.stream.Collectors;
 
 
 public class Merger {
+
+    //Твой класс мог бы иметь единственную функцию, а у тебя тут состояние появилось
+    //Методы, которые использую эти поля, могли бы принимать их как параметры
     Event absorbed;
     Event absorber;
 
@@ -32,18 +35,22 @@ public class Merger {
 
     //значения из списка либо не меняем, либо переводим в null и перезаписываем, перед выдачей убираем все null
     public Set<Event> setToMerge(Set<Event> eventSet) {
-        checkEventSetIsNotNull(eventSet);
-        checkEventSetIsNotEmpty(eventSet);
+        checkEventSetIsNotNull(eventSet);  // Обсуждаемо. Мож и невалидно, а мож и эквивалентно пустому.
+        checkEventSetIsNotEmpty(eventSet); // Ненуачо? Пустое множество вполне валидно. Резальтат очевиден - тож пустое множество.
         if (eventSet.size() == 1) {
             return eventSet;
         }
+        // алгоритм в целом понятен, но не изящен
         List<Event> eventList = new ArrayList<>(eventSet);
+        // оптимизация не покрывает все возможные варианты
+        // лучше так: if (!(eventSet instanceof SortedSet))
+        // ну и ваще тогда можно сразу принимать SortedSet как параметр метода
         if (eventSet.getClass() != TreeSet.class) {
             Collections.sort(eventList);
         }
         for (int i = 0; i < eventList.size() - 1; i++) {
             absorbed = eventList.get(i);
-            absorber = eventList.get(i + 1);
+            absorber = eventList.get(i + 1); //ты редактируешь параметр метода - это делает твою функцию нечистой, не надо так
             if (isOverlap()) {
                 merge();
                 eventList.set(i, null);
