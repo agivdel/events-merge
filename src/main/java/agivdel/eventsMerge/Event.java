@@ -7,11 +7,12 @@ import java.time.LocalTime;
 /**
  * Класс Event с двумя полями LocalDateTime:
  * start: время начала события.
- * Если через конструктор передать LocalDateTime=null, start=LocalDateTime.MIN.
- * Если через конструктор передать LocalTime=null, start=LocalTime.MIDNIGHT.
  * end: время конца события.
- * Если через конструктор передать LocalDateTime=null, end=LocalDateTime.MAX.
- * Если через конструктор передать LocalTime=null, end=LocalTime.MAX.
+ * Если через конструктор передать LocalDateTime=null, start равен LocalDateTime.MIN.
+ * Если через конструктор передать LocalTime=null, start равен LocalTime.MIDNIGHT.
+ * Если через конструктор передать LocalDateTime=null, end равен LocalDateTime.MAX.
+ * Если через конструктор передать LocalTime=null, end равен LocalTime.MAX.
+ * При передаче через сеттер только объекта LocalTime устанавливается текущая дата.
  * При сравнении двух объектов Event сравниваются поля start.
  */
 
@@ -26,7 +27,6 @@ public class Event implements Comparable {
     // Возможно ли существование событий без начала и конца?
     // Возможно ли существование событий с началом до конца?
     // Ни в коде, ни в тестах ответа нет.
-    //Теперь есть!
     public Event(LocalDateTime eventStart, LocalDateTime eventEnd) {
         LocalDateTime tempStart = eventStart == null ? eventStart = LocalDateTime.MIN : eventStart;
         LocalDateTime tempEnd = eventEnd == null ? eventEnd = LocalDateTime.MAX : eventEnd;
