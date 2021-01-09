@@ -66,15 +66,6 @@ public class Merger {
         return list.stream().filter(Objects::nonNull).collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
-
-
-/*    public void checkEventSetIsNotEmpty(Set<Event> eventSet) {
-        if (eventSet.isEmpty()) {
-            throw new IllegalArgumentException("The eventSet can't be empty.");
-        }
-    }*/
-
-    //если границы событий соприкасаются, они не перекрываются
     public boolean isOverlap(Event e1, Event e2) {
         return e1.getStart().isBefore(e2.getEnd())
                 & e1.getEnd().isAfter(e2.getStart());
@@ -92,19 +83,5 @@ public class Merger {
 
     public LocalDateTime getLater(LocalDateTime ldt1, LocalDateTime ldt2) {
         return ldt1.isAfter(ldt2) ? ldt1 : ldt2;
-    }
-
-
-
-    //если границы событий соприкасаются, они не перекрываются
-    public static boolean isOverlapStatic(Event e1, Event e2) {
-        return e1.getStart().isBefore(e2.getEnd())
-                & e1.getEnd().isAfter(e2.getStart());
-    }
-
-    public static Event mergeStatic(Event e1, Event e2) {
-        LocalDateTime start = e1.getStart().isBefore(e2.getStart()) ? e1.getStart() : e2.getStart();
-        LocalDateTime end = e1.getEnd().isAfter(e2.getEnd()) ? e1.getEnd() : e2.getEnd();
-        return new Event(start, end);
     }
 }
