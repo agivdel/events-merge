@@ -1,5 +1,7 @@
 package agivdel.eventsMerge;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import static java.time.LocalTime.*;
 import java.util.*;
@@ -34,6 +36,7 @@ public class Main {
         Set<Event> newSet = new Merger().setToMerge(eventSet);
         System.out.println("after merge: ");
         newSet.forEach(System.out::println);
+
     }
 
     private static Set<Event> getEventSet(LocalTime... localTimes) {
