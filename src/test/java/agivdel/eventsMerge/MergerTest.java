@@ -114,7 +114,6 @@ public class MergerTest {
         Set<Event> eventSet = Set.of(e1, e2);
 
         Set<Event> mergedSet = new Merger().setToMerge(eventSet);
-        Assert.assertNotEquals(eventSet, mergedSet);
         Assert.assertEquals(1, mergedSet.size());
     }
 

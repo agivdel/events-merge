@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 public class Merger {
 
     public Set<Event> setToMerge(Set<Event> eventSet) {
-        checkEventSetIsNotNull(eventSet);  // Обсуждаемо. Мож и невалидно, а мож и эквивалентно пустому.
+        checkEventSetIsNotNull(eventSet);
         if (eventSet.isEmpty() || eventSet.size() == 1) {
             return eventSet;
         }
