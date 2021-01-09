@@ -18,28 +18,12 @@ import java.util.stream.Collectors;
 
 public class Merger {
 
-    //Твой класс мог бы иметь единственную функцию, а у тебя тут состояние появилось
-    //Методы, которые использую эти поля, могли бы принимать их как параметры
-//    Event absorbed;
-//    Event absorber;
-
-
-    //значения из списка либо не меняем, либо переводим в null и перезаписываем, перед выдачей убираем все null
     public Set<Event> setToMerge(Set<Event> eventSet) {
         checkEventSetIsNotNull(eventSet);  // Обсуждаемо. Мож и невалидно, а мож и эквивалентно пустому.
-        //checkEventSetIsNotEmpty(eventSet); // Ненуачо? Пустое множество вполне валидно. Резальтат очевиден - тож пустое множество.
-        //АГ: убрал, блин...
         if (eventSet.isEmpty() || eventSet.size() == 1) {
             return eventSet;
         }
-        // алгоритм в целом понятен, но не изящен
         List<Event> eventList = new ArrayList<>(eventSet);
-        // оптимизация не покрывает все возможные варианты
-        // лучше так: if (!(eventSet instanceof SortedSet))
-        // ну и ваще тогда можно сразу принимать SortedSet как параметр метода
-//        if (eventSet.getClass() != TreeSet.class) {
-//            Collections.sort(eventList);
-//        }
         if (!(eventSet instanceof SortedSet)) {
             Collections.sort(eventList);
         }
@@ -55,33 +39,32 @@ public class Merger {
     private Set<Event> getMergedSet(List<Event> list) {
         for (int i = 0; i < list.size() - 1; i++) {
             Event e1 = list.get(i);
-            Event e2 = list.get(i + 1); //ты редактируешь параметр метода - это делает твою функцию нечистой, не надо так
-            //АГ: не понял...
+            Event e2 = list.get(i + 1);
             if (isOverlap(e1, e2)) {
                 e2 = mergeOf(e1, e2);
                 list.set(i, null);
-                list.set(i + 1, e2);//перезаписываем элемент - с расширенными границами
+                list.set(i + 1, e2);
             }
         }
         return list.stream().filter(Objects::nonNull).collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
-    public boolean isOverlap(Event e1, Event e2) {
+    private boolean isOverlap(Event e1, Event e2) {
         return e1.getStart().isBefore(e2.getEnd())
                 & e1.getEnd().isAfter(e2.getStart());
     }
 
-    public Event mergeOf(Event e1, Event e2) {
+    private Event mergeOf(Event e1, Event e2) {
         LocalDateTime start = getEarlier(e2.getStart(), e1.getStart());
         LocalDateTime end = getLater(e2.getEnd(), e1.getEnd());
         return new Event(start, end);
     }
 
-    public LocalDateTime getEarlier(LocalDateTime ldt1, LocalDateTime ldt2) {
+    private LocalDateTime getEarlier(LocalDateTime ldt1, LocalDateTime ldt2) {
         return ldt1.isBefore(ldt2) ? ldt1 : ldt2;
     }
 
-    public LocalDateTime getLater(LocalDateTime ldt1, LocalDateTime ldt2) {
+    private LocalDateTime getLater(LocalDateTime ldt1, LocalDateTime ldt2) {
         return ldt1.isAfter(ldt2) ? ldt1 : ldt2;
     }
 }

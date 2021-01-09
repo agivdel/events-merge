@@ -34,38 +34,6 @@ public class MergerTest {
     }
 
     @Test
-    public void isOverlapTest() {
-        Event e1 = new Event(t2, t3);
-
-        Event e2 = new Event(t2, t5);
-        Assert.assertTrue(merger.isOverlap(e1, e2));
-
-        Event e3 = new Event(t1, t4);
-        Assert.assertTrue(merger.isOverlap(e1, e3));
-    }
-
-    @Test
-    public void isNotOverlapTest() {
-        Event e1 = new Event(t2, t3);
-
-        Event e2 = new Event(t3, t6);
-        Assert.assertFalse(merger.isOverlap(e1, e2));
-
-        Event e3 = new Event(t1, t2);
-        Assert.assertFalse(merger.isOverlap(e1, e3));
-    }
-
-    @Test
-    public void mergeTest() {
-        Event e1 = new Event(t1, t7);
-        Event e2 = new Event(t2, t4);
-
-        e1 = merger.mergeOf(e1, e2);
-        Assert.assertEquals(t1, e1.getStart().toLocalTime());
-        Assert.assertEquals(t7, e1.getEnd().toLocalTime());
-    }
-
-    @Test
     public void setToMergeWithNullSetTest() {
         expectedEx.expect(IllegalArgumentException.class);
         expectedEx.expectMessage("The eventSet can't be null.");
@@ -130,20 +98,35 @@ public class MergerTest {
     }
 
     @Test
-    public void setToMergeWithCorrectSetTest() {
-        Set<Event> eventSet = getEventSet();
-        System.out.println(eventSet);
+    public void setToMergeWithoutOverlapTest() {
+        Event e1 = new Event(t2, t3);
+        Event e2 = new Event(t3, t6);
+        Set<Event> eventSet = Set.of(e1, e2);
 
-        Set<Event> mergedSet2 = merger.setToMerge(eventSet);
-        Assert.assertEquals(3, mergedSet2.size());
+        Set<Event> notMergedSet = new Merger().setToMerge(eventSet);
+        Assert.assertEquals(eventSet, notMergedSet);
     }
 
-    private Set<Event> getEventSet() {
+    @Test
+    public void setToMergeWithOverlap1Test() {
+        Event e1 = new Event(t2, t4);
+        Event e2 = new Event(t3, t6);
+        Set<Event> eventSet = Set.of(e1, e2);
+
+        Set<Event> mergedSet = new Merger().setToMerge(eventSet);
+        Assert.assertNotEquals(eventSet, mergedSet);
+        Assert.assertEquals(1, mergedSet.size());
+    }
+
+    @Test
+    public void setToMergeWithOverlap2Test() {
         Set<Event> eventSet = new TreeSet<>();
         eventSet.add(new Event(t1, t2));
         eventSet.add(new Event(t2, t5));
         eventSet.add(new Event(t4, t7));
         eventSet.add(new Event(t7, t9));
-        return eventSet;
+
+        Set<Event> mergedSet = merger.setToMerge(eventSet);
+        Assert.assertEquals(3, mergedSet.size());
     }
 }
