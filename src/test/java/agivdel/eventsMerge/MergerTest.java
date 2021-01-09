@@ -15,15 +15,15 @@ import java.util.TreeSet;
 public class MergerTest {
     Merger merger;
 
-    private final LocalTime lt1000 = LocalTime.of(10, 0);
-    private final LocalTime lt1030 = LocalTime.of(10, 30);
-    private final LocalTime lt1100 = LocalTime.of(11, 0);
-    private final LocalTime lt1130 = LocalTime.of(11, 30);
-    private final LocalTime lt1200 = LocalTime.of(12, 0);
-    private final LocalTime lt1230 = LocalTime.of(12, 30);
-    private final LocalTime lt1300 = LocalTime.of(13, 0);
-    private final LocalTime lt1330 = LocalTime.of(13, 30);
-    private final LocalTime lt1400 = LocalTime.of(14, 0);
+    private final LocalTime t1 = LocalTime.of(10, 0);
+    private final LocalTime t2 = LocalTime.of(10, 30);
+    private final LocalTime t3 = LocalTime.of(11, 0);
+    private final LocalTime t4 = LocalTime.of(11, 30);
+    private final LocalTime t5 = LocalTime.of(12, 0);
+    private final LocalTime t6 = LocalTime.of(12, 30);
+    private final LocalTime t7 = LocalTime.of(13, 0);
+    private final LocalTime t8 = LocalTime.of(13, 30);
+    private final LocalTime t9 = LocalTime.of(14, 0);
 
     @Rule
     public ExpectedException expectedEx = ExpectedException.none();
@@ -35,35 +35,34 @@ public class MergerTest {
 
     @Test
     public void isOverlapTest() {
-        merger.absorbed = new Event(lt1030, lt1100);
+        Event e1 = new Event(t2, t3);
 
-        merger.absorber = new Event(lt1030, lt1200);
-        Assert.assertTrue(merger.isOverlap());
+        Event e2 = new Event(t2, t5);
+        Assert.assertTrue(merger.isOverlap(e1, e2));
 
-        merger.absorber = new Event(lt1000, lt1130);
-        Assert.assertTrue(merger.isOverlap());
+        Event e3 = new Event(t1, t4);
+        Assert.assertTrue(merger.isOverlap(e1, e3));
     }
 
     @Test
     public void isNotOverlapTest() {
-        merger.absorbed = new Event(lt1030, lt1100);
+        Event e1 = new Event(t2, t3);
 
-        merger.absorber = new Event(lt1100, lt1400);
-        Assert.assertFalse(merger.isOverlap());
+        Event e2 = new Event(t3, t6);
+        Assert.assertFalse(merger.isOverlap(e1, e2));
 
-        merger.absorber = new Event(lt1000, lt1030);
-        Assert.assertFalse(merger.isOverlap());
+        Event e3 = new Event(t1, t2);
+        Assert.assertFalse(merger.isOverlap(e1, e3));
     }
 
     @Test
     public void mergeTest() {
-        Event event1 = new Event(lt1000, lt1400);
-        Event event2 = new Event(lt1130, lt1330);
-        merger = new Merger(event1, event2);
+        Event e1 = new Event(t1, t7);
+        Event e2 = new Event(t2, t4);
 
-        merger.merge();
-        Assert.assertEquals(lt1000, merger.absorber.getStart().toLocalTime());
-        Assert.assertEquals(lt1400, merger.absorber.getEnd().toLocalTime());
+        e1 = merger.mergeOf(e1, e2);
+        Assert.assertEquals(t1, e1.getStart().toLocalTime());
+        Assert.assertEquals(t7, e1.getEnd().toLocalTime());
     }
 
     @Test
@@ -75,11 +74,14 @@ public class MergerTest {
 
     @Test
     public void setToMergeWithEmptySetTest() {
-        expectedEx.expect(IllegalArgumentException.class);
-        expectedEx.expectMessage("The eventSet can't be empty.");
-        merger.setToMerge(new HashSet<>());
-        merger.setToMerge(new TreeSet<>());
-        merger.setToMerge(new LinkedHashSet<>());
+        Set<Event> hashSet = merger.setToMerge(new HashSet<>());
+        Assert.assertEquals(new HashSet<>(), hashSet);
+
+        Set<Event> treeSet = merger.setToMerge(new TreeSet<>());
+        Assert.assertEquals(new TreeSet<>(), treeSet);
+
+        Set<Event> linkedHashSet = merger.setToMerge(new LinkedHashSet<>());
+        Assert.assertEquals(new LinkedHashSet<>(), linkedHashSet);
     }
 
     @Test
@@ -103,7 +105,7 @@ public class MergerTest {
     @Test
     public void hashSetToMergeWithOnlyNotNullElementTest() {
         Set<Event> eventHashSet0 = new HashSet<>();
-        eventHashSet0.add(new Event(lt1000, lt1030));
+        eventHashSet0.add(new Event(t1, t8));
 
         Set<Event> eventHashSet1 = merger.setToMerge(eventHashSet0);
         Assert.assertEquals(eventHashSet0, eventHashSet1);
@@ -112,7 +114,7 @@ public class MergerTest {
     @Test
     public void treeSetToMergeWithOnlyNotNullElementTest() {
         Set<Event> eventTreeSet0 = new TreeSet<>();
-        eventTreeSet0.add(new Event(lt1000, lt1030));
+        eventTreeSet0.add(new Event(t5, t9));
 
         Set<Event> eventTreeSet1 = merger.setToMerge(eventTreeSet0);
         Assert.assertEquals(eventTreeSet0, eventTreeSet1);
@@ -121,7 +123,7 @@ public class MergerTest {
     @Test
     public void linkedHashSetToMergeWithOnlyNotNullElementTest() {
         Set<Event> eventLinkedHashSet0 = new LinkedHashSet<>();
-        eventLinkedHashSet0.add(new Event(lt1000, lt1030));
+        eventLinkedHashSet0.add(new Event(t8, t9));
 
         Set<Event> eventLinkedHashSet1 = merger.setToMerge(eventLinkedHashSet0);
         Assert.assertEquals(eventLinkedHashSet0, eventLinkedHashSet1);
@@ -137,17 +139,11 @@ public class MergerTest {
     }
 
     private Set<Event> getEventSet() {
-        Event event1 = new Event(lt1000, lt1030);
-        Event event2 = new Event(lt1030, lt1330);
-        Event event3 = new Event(lt1230, lt1300);
-        Event event4 = new Event(lt1330, lt1400);
-
         Set<Event> eventSet = new TreeSet<>();
-        eventSet.add(event4);
-        eventSet.add(event1);
-        eventSet.add(event3);
-        eventSet.add(event2);
-
+        eventSet.add(new Event(t1, t2));
+        eventSet.add(new Event(t2, t5));
+        eventSet.add(new Event(t4, t7));
+        eventSet.add(new Event(t7, t9));
         return eventSet;
     }
 }
