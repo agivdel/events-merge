@@ -42,6 +42,12 @@ public class MergerTest {
 
     @Test
     public void setToMergeWithEmptySetTest() {
+        // при проверки, и ни одной правильной
+        // одной правильной хватило бы
+//        Set<Event> input = new HashSet<>();
+//        Set<Event> result = merger.setToMerge(input);
+//        Assert.assertTrue(input == result);
+
         Set<Event> hashSet = merger.setToMerge(new HashSet<>());
         Assert.assertEquals(new HashSet<>(), hashSet);
 
@@ -54,6 +60,7 @@ public class MergerTest {
 
     @Test
     public void hashSetToMergeWithOnlyNullElementTest() {
+        // А чо если кроме null есть и другие элементы?
         Set<Event> eventHashSet0 = new HashSet<>();
         eventHashSet0.add(null);
 
@@ -76,10 +83,11 @@ public class MergerTest {
         eventHashSet0.add(new Event(t1, t8));
 
         Set<Event> eventHashSet1 = merger.setToMerge(eventHashSet0);
+        //то же самое, результат - он не просто equals, он тот же самый
         Assert.assertEquals(eventHashSet0, eventHashSet1);
     }
 
-    @Test
+    @Test //излишне
     public void treeSetToMergeWithOnlyNotNullElementTest() {
         Set<Event> eventTreeSet0 = new TreeSet<>();
         eventTreeSet0.add(new Event(t5, t9));
@@ -88,7 +96,7 @@ public class MergerTest {
         Assert.assertEquals(eventTreeSet0, eventTreeSet1);
     }
 
-    @Test
+    @Test //излишне
     public void linkedHashSetToMergeWithOnlyNotNullElementTest() {
         Set<Event> eventLinkedHashSet0 = new LinkedHashSet<>();
         eventLinkedHashSet0.add(new Event(t8, t9));
@@ -115,6 +123,7 @@ public class MergerTest {
 
         Set<Event> mergedSet = new Merger().setToMerge(eventSet);
         Assert.assertEquals(1, mergedSet.size());
+        //А где проверка собственно ивентов?
     }
 
     @Test
@@ -127,5 +136,6 @@ public class MergerTest {
 
         Set<Event> mergedSet = merger.setToMerge(eventSet);
         Assert.assertEquals(3, mergedSet.size());
+        //То же самое - где проверка ивентов?
     }
 }
