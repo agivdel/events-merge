@@ -27,7 +27,7 @@ public class Event implements Comparable { // пропустил при перв
     // Возможно ли существование событий с началом до конца?
     // Ни в коде, ни в тестах ответа нет.
     // Все равно плохо.
-    //  - есть сеттеры, на них нет никакой валидации (АГ? сделал валдиацию сеттеров)
+    //  - есть сеттеры, на них нет никакой валидации (АГ: сделал валдиацию сеттеров DB: не сделал, через сеттеры по прежнему можно проставить начало позже конца)
     //  - имена переменных лживы, если уж ты решил менять их местами - то лучше дать им названия типа bound0, bound1
     public Event(LocalDateTime eventStart, LocalDateTime eventEnd) {
         eventStart = minInsteadNull(eventStart);
@@ -39,9 +39,9 @@ public class Event implements Comparable { // пропустил при перв
             this.start = eventEnd;
             this.end = eventStart;
         }
-        //неуместны жонглирование датами (АГ: в каких строках?) и присвоение дефолтных значений (АГ: ты про MIN/MAX?)
+        //неуместны жонглирование датами (АГ: в каких строках? DB: странный вопрос, тут не было ничего кроме жонглирования датами и присвоения дефолтных значений) и присвоение дефолтных значений (АГ: ты про MIN/MAX? ДБ - да)
         //валидации было бы достаточно
-        //я тут вижу "слишком умный" компонент
+        //я все еще тут вижу "слишком умный" компонент
     }
 
     // Обычно такие штуки делают через статический метод.
@@ -53,6 +53,7 @@ public class Event implements Comparable { // пропустил при перв
     // Чо если между вызовами LocalDate.now() дата сменится?
     // Ну и в целом не вижу необходимости в таком методе он ни в условиях задачи не фигурирует, ни для тестов особо не нужен
     //АГ: Если дата не нужна, ввести только время проще, чем время и дату. Думаю, иначе легко скатится к API Book
+    //Не понял наброса. Как отсутствие необязательного констуктора приближает нас к API Book?
     public Event(LocalTime eventStart, LocalTime eventEnd) {
         this(LocalDateTime.of(LocalDate.now(), eventStart == null ? LocalTime.MIDNIGHT : eventStart),
                 LocalDateTime.of(LocalDate.now(), eventEnd == null ? LocalTime.MAX : eventEnd));
@@ -69,6 +70,7 @@ public class Event implements Comparable { // пропустил при перв
     //обрати внимание - метод не используется
     //АГ: но он может использоваться - если пользователю будет удобнее оперировать LocalDateTime (например, он уже получит такой объект готовым).
     //АГ: а только для тестов мне было лень набивать LocalDateTime вместо LocalTime.
+    //Что мешало хелпер для тестов написать?
     public void setStart(LocalDateTime start) {
         this.start = minInsteadNull(start);
     }
@@ -87,6 +89,7 @@ public class Event implements Comparable { // пропустил при перв
     }
 
     //Валидация конструкторов и сеттеров
+    //Это не валидация а присвоение дефолтного значения
     private LocalDateTime minInsteadNull(LocalDateTime start) {
         if (start == null) {
             return LocalDateTime.MIN;
@@ -95,6 +98,7 @@ public class Event implements Comparable { // пропустил при перв
     }
 
     //Валидация конструкторов и сеттеров
+    //Это не валидация а присвоение дефолтного значения
     private LocalDateTime maxInsteadNull(LocalDateTime end) {
         if (end == null) {
             return LocalDateTime.MAX;
@@ -108,10 +112,13 @@ public class Event implements Comparable { // пропустил при перв
         return this.getStart().compareTo(e.getStart());
         //АГ: вот это не понимаю - если я хочу, чтобы Event были сравниваемые, где мне еще переопределять этот метод?
         //Или ты имеешь в виду писать компаратор в класса Merge (где он требуется для сортировки)?
+        //Компаратор можно определить и здесь. Но именно компаратор - как константу с говорящим именем.
+        //Потому что у класса Event нет самоочевидного способа сортировки. Сортировка по датам конца ничуть не хуже чем по датам начала.
+        //Вроятно, нужен тест, в котором на вход мержера будет подаваться множество со своим компаратором, который отличается
     }
 
     @Override
-    public String toString() { // чо если start и end имеют разную дату?
+    public String toString() { // чо если start и end имеют разную дату? обламываешься починить?
         return "Event{" + start.toLocalDate() +
                 ": start=" + start.toLocalTime() +
                 ", end=" + end.toLocalTime() +
