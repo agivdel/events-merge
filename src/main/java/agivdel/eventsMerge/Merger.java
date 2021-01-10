@@ -32,10 +32,10 @@ public class Merger {
     public Set<Event> setToMerge(Set<Event> eventSet) {
         checkEventSetIsNotNull(eventSet);
         //кста, на проверял, но эту проверку можно удалить и ничо не поменяется. ну почти ничего
+        //АГ: результат не изменится, тест чуть подправить. Я ее ввел для того,чтобы исключить лишнюю работу.
         if (eventSet.isEmpty() || eventSet.size() == 1) {
             return eventSet;
         }
-        //сортируем каждое входящее множество
         List<Event> eventList = eventSet.stream().filter(Objects::nonNull).sorted().collect(Collectors.toList());
         return getMergedSet(eventList);
     }
@@ -62,8 +62,6 @@ public class Merger {
     private boolean isOverlap(Event e1, Event e2) {
         return e1.getStart().isBefore(e2.getEnd())
                 && e1.getEnd().isAfter(e2.getStart());
-        //не используй единичный & без явной нужды, всегда юзай двойной &&
-        //АГ: разницу между умножением и суммой я знаю. Просто ступил.
     }
 
     private Event mergeOf(Event e1, Event e2) {
