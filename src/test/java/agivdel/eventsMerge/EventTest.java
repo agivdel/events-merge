@@ -62,10 +62,12 @@ public class EventTest {
     @Test
     public void eventComparingTest() {
         Event event0 = new Event();
-        event0.setStart(t5);
-        event0.setEnd(t6);
+        event0.setStart(LocalDateTime.of(now, t5));
+        event0.setEnd(LocalDateTime.of(now, t7));
 
-        Event event1 = new Event(t5, t7);
+        Event event1 = new Event();
+        event1.setStart(t5);
+        event1.setEnd(t7);
         Assert.assertEquals(0, event0.compareTo(event1));
 
         Event event2 = new Event(t6, t8);

@@ -18,7 +18,6 @@ import java.time.LocalTime;
 
 public class Event implements Comparable { // пропустил при первом ревью - интерфейс Comparable параметризуется, не пренебрегай
     // Не очень понятно, чем обусловлен выбор типа для хранения времени. Обосновать можешь?
-    // Если есть геттеры - непонятно, зачем public
     private LocalDateTime start;
     private LocalDateTime end;
 
@@ -28,52 +27,32 @@ public class Event implements Comparable { // пропустил при перв
     // Возможно ли существование событий с началом до конца?
     // Ни в коде, ни в тестах ответа нет.
     // Все равно плохо.
-    //  - есть сеттеры, на них нет никакой валидации
+    //  - есть сеттеры, на них нет никакой валидации (АГ? сделал валдиацию сеттеров)
     //  - имена переменных лживы, если уж ты решил менять их местами - то лучше дать им названия типа bound0, bound1
     public Event(LocalDateTime eventStart, LocalDateTime eventEnd) {
-        // не люблю такое форматирование тренарного оператора, лучше так:
-//        LocalDateTime tempStart = eventStart == null
-//                ? eventStart = LocalDateTime.MIN
-//                : eventStart;
-        // отформатировал, и сразу стало видно, что у тебя там еще есть какое-то присваивание
-        LocalDateTime tempStart = eventStart == null ? eventStart = LocalDateTime.MIN : eventStart;
-        LocalDateTime tempEnd = eventEnd == null ? eventEnd = LocalDateTime.MAX : eventEnd;
-        LocalDateTime temp;
-        if (eventEnd.isBefore(eventStart)) {
-            temp = tempEnd;
-            tempEnd = tempStart;
-            tempStart = temp;
+        eventStart = minInsteadNull(eventStart);
+        eventEnd = maxInsteadNull(eventEnd);
+        if (eventStart.isBefore(eventEnd)) {
+            this.start = eventStart;
+            this.end = eventEnd;
+        } else {
+            this.start = eventEnd;
+            this.end = eventStart;
         }
-        this.start = tempStart;
-        this.end = tempEnd;
-
-        // я бы так:
-//        if (eventStart == null) {
-//            eventStart = LocalDateTime.MIN;
-//        }
-//        if (eventEnd == null) {
-//            eventStart = LocalDateTime.MAX;
-//        }
-//        if (eventStart.isBefore(eventEnd)) {
-//            this.start = eventStart;
-//            this.end = eventEnd;
-//        } else {
-//            this.start = eventEnd;
-//            this.end = eventStart;
-//        }
-
-        //неуместны жонглирование датами и присвоение дефолтных значений
+        //неуместны жонглирование датами (АГ: в каких строках?) и присвоение дефолтных значений (АГ: ты про MIN/MAX?)
         //валидации было бы достаточно
         //я тут вижу "слишком умный" компонент
     }
 
     // Обычно такие штуки делают через статический метод.
+    // АГ: ты имееешь в виду методы типа LocalTime.of() или что-то другое?
     // Непонятно, зачем тебе еще и такой конструктор. Выглядит как ненужное усложнение.
     // Можно создатьо события только для текущего дня.
     //АГ: это вариант конструктора, когда не нужды задавать дату, отличную от текущей
     // Текущая дата не является константой
     // Чо если между вызовами LocalDate.now() дата сменится?
     // Ну и в целом не вижу необходимости в таком методе он ни в условиях задачи не фигурирует, ни для тестов особо не нужен
+    //АГ: Если дата не нужна, ввести только время проще, чем время и дату. Думаю, иначе легко скатится к API Book
     public Event(LocalTime eventStart, LocalTime eventEnd) {
         this(LocalDateTime.of(LocalDate.now(), eventStart == null ? LocalTime.MIDNIGHT : eventStart),
                 LocalDateTime.of(LocalDate.now(), eventEnd == null ? LocalTime.MAX : eventEnd));
@@ -88,27 +67,47 @@ public class Event implements Comparable { // пропустил при перв
     }
 
     //обрати внимание - метод не используется
+    //АГ: но он может использоваться - если пользователю будет удобнее оперировать LocalDateTime (например, он уже получит такой объект готовым).
+    //АГ: а только для тестов мне было лень набивать LocalDateTime вместо LocalTime.
     public void setStart(LocalDateTime start) {
-        this.start = start;
+        this.start = minInsteadNull(start);
     }
 
     public void setStart(LocalTime start) {
-        this.start = LocalDateTime.of(LocalDate.now(), start);
+        this.start = LocalDateTime.of(LocalDate.now(), start == null ? LocalTime.MIDNIGHT : start);
     }
 
     //и этот тож не используется
     public void setEnd(LocalDateTime end) {
-        this.end = end;
+        this.end = maxInsteadNull(end);
     }
 
     public void setEnd(LocalTime end) {
-        this.end = LocalDateTime.of(LocalDate.now(), end);
+        this.end = LocalDateTime.of(LocalDate.now(), end == null ? LocalTime.MAX : end);
+    }
+
+    //Валидация конструкторов и сеттеров
+    private LocalDateTime minInsteadNull(LocalDateTime start) {
+        if (start == null) {
+            return LocalDateTime.MIN;
+        }
+        return start;
+    }
+
+    //Валидация конструкторов и сеттеров
+    private LocalDateTime maxInsteadNull(LocalDateTime end) {
+        if (end == null) {
+            return LocalDateTime.MAX;
+        }
+        return end;
     }
 
     @Override
     public int compareTo(Object o) { // Так ли нужно сравнение именно здесь? Подумай, обсудим.
         Event e = (Event) o;
         return this.getStart().compareTo(e.getStart());
+        //АГ: вот это не понимаю - если я хочу, чтобы Event были сравниваемые, где мне еще переопределять этот метод?
+        //Или ты имеешь в виду писать компаратор в класса Merge (где он требуется для сортировки)?
     }
 
     @Override
