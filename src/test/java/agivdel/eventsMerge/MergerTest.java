@@ -1,19 +1,16 @@
 package agivdel.eventsMerge;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 
 public class MergerTest {
-    Merger merger;
 
     private final LocalTime t1 = LocalTime.of(10, 0);
     private final LocalTime t2 = LocalTime.of(10, 30);
@@ -28,104 +25,75 @@ public class MergerTest {
     @Rule
     public ExpectedException expectedEx = ExpectedException.none();
 
-    @Before
-    public void beforeTest() {
-        merger = new Merger();
-    }
-
     @Test
-    public void setToMergeWithNullSetTest() {
+    public void setToMerge_WithNullSet() {
         expectedEx.expect(IllegalArgumentException.class);
         expectedEx.expectMessage("The eventSet can't be null.");
-        merger.setToMerge(null);
+        Merger.setToMerge(null);
     }
 
     @Test
-    public void setToMergeWithEmptySetTest() {
-        Set<Event> hashSet = merger.setToMerge(new HashSet<>());
-        Assert.assertEquals(new HashSet<>(), hashSet);
-
-        Set<Event> treeSet = merger.setToMerge(new TreeSet<>());
-        Assert.assertEquals(new TreeSet<>(), treeSet);
-
-        Set<Event> linkedHashSet = merger.setToMerge(new LinkedHashSet<>());
-        Assert.assertEquals(new LinkedHashSet<>(), linkedHashSet);
+    public void setToMerge_WithEmptySet() {
+        Set<Event> input = new HashSet<>();
+        Set<Event> result = Merger.setToMerge(input);
+        Assert.assertSame(result, input);
     }
 
     @Test
-    public void hashSetToMergeWithOnlyNullElementTest() {
-        Set<Event> eventHashSet0 = new HashSet<>();
-        eventHashSet0.add(null);
+    public void setToMerge_WithOnlyNotNullElement() {
+        Set<Event> input = new LinkedHashSet<>();
+        input.add(new Event(LocalDateTime.of(LocalDate.now(), t1), LocalDateTime.of(LocalDate.now(), t3)));
 
-        Set<Event> eventSet = merger.setToMerge(eventHashSet0);
-        Assert.assertEquals(eventSet, eventHashSet0);
+        Set<Event> result = Merger.setToMerge(input);
+        Assert.assertSame(input, result);
     }
 
     @Test
-    public void linkedHashSetToMergeWithOnlyNullElementTest() {
-        Set<Event> eventLinkedHashSet0 = new LinkedHashSet<>();
-        eventLinkedHashSet0.add(null);
+    public void setToMerge_WithNullElement() {
+        Event e = Event.today(t3, t6);
+        Set<Event> inputWithNull = new HashSet<>();
+        inputWithNull.add(null);
+        inputWithNull.add(e);
 
-        Set<Event> eventSet = merger.setToMerge(eventLinkedHashSet0);
-        Assert.assertEquals(eventSet, eventLinkedHashSet0);
+        Set<Event> result = Merger.setToMerge(inputWithNull);
+        Assert.assertNotSame(result, inputWithNull);
+        Assert.assertEquals(1, result.size());
+        Assert.assertEquals(e, result.stream().findFirst().get());
     }
 
     @Test
-    public void hashSetToMergeWithOnlyNotNullElementTest() {
-        Set<Event> eventHashSet0 = new HashSet<>();
-        eventHashSet0.add(new Event(t1, t8));
-
-        Set<Event> eventHashSet1 = merger.setToMerge(eventHashSet0);
-        Assert.assertEquals(eventHashSet0, eventHashSet1);
-    }
-
-    @Test
-    public void treeSetToMergeWithOnlyNotNullElementTest() {
-        Set<Event> eventTreeSet0 = new TreeSet<>();
-        eventTreeSet0.add(new Event(t5, t9));
-
-        Set<Event> eventTreeSet1 = merger.setToMerge(eventTreeSet0);
-        Assert.assertEquals(eventTreeSet0, eventTreeSet1);
-    }
-
-    @Test
-    public void linkedHashSetToMergeWithOnlyNotNullElementTest() {
-        Set<Event> eventLinkedHashSet0 = new LinkedHashSet<>();
-        eventLinkedHashSet0.add(new Event(t8, t9));
-
-        Set<Event> eventLinkedHashSet1 = merger.setToMerge(eventLinkedHashSet0);
-        Assert.assertEquals(eventLinkedHashSet0, eventLinkedHashSet1);
-    }
-
-    @Test
-    public void setToMergeWithoutOverlapTest() {
-        Event e1 = new Event(t2, t3);
-        Event e2 = new Event(t3, t6);
+    public void setToMerge_WithoutOverlap() {
+        Event e1 = new Event(LocalDateTime.of(LocalDate.now(), t1), LocalDateTime.of(LocalDate.now(), t8));
+        Event e2 = Event.today(t8, t9);
         Set<Event> eventSet = Set.of(e1, e2);
 
-        Set<Event> notMergedSet = new Merger().setToMerge(eventSet);
+        Set<Event> notMergedSet = Merger.setToMerge(eventSet);
         Assert.assertEquals(eventSet, notMergedSet);
     }
 
     @Test
-    public void setToMergeWithOverlap1Test() {
-        Event e1 = new Event(t2, t4);
-        Event e2 = new Event(t3, t6);
-        Set<Event> eventSet = Set.of(e1, e2);
-
-        Set<Event> mergedSet = new Merger().setToMerge(eventSet);
-        Assert.assertEquals(1, mergedSet.size());
-    }
-
-    @Test
-    public void setToMergeWithOverlap2Test() {
+    public void setToMerge_WithOverlap() {
         Set<Event> eventSet = new TreeSet<>();
-        eventSet.add(new Event(t1, t2));
-        eventSet.add(new Event(t2, t5));
-        eventSet.add(new Event(t4, t7));
-        eventSet.add(new Event(t7, t9));
+        eventSet.add(Event.today(t1, t2));
+        eventSet.add(Event.today(t2, t5));
+        eventSet.add(Event.today(t4, t7));
+        eventSet.add(Event.today(t7, t9));
 
-        Set<Event> mergedSet = merger.setToMerge(eventSet);
-        Assert.assertEquals(3, mergedSet.size());
+        Set<Event> mergedSet = Merger.setToMerge(eventSet);
+        List<Event> result = new ArrayList<>(mergedSet);
+
+        Assert.assertEquals(3, result.size());
+
+        Event expectedEvent0 = Event.today(t1, t2);
+        Assert.assertEquals(expectedEvent0.getStart(), result.get(0).getStart());
+        Assert.assertEquals(expectedEvent0.getEnd(), result.get(0).getEnd());
+
+        Event expectedEvent1 = Event.today(t2, t7);
+        Assert.assertEquals(expectedEvent1.getStart(), result.get(1).getStart());
+        Assert.assertEquals(expectedEvent1.getEnd(), result.get(1).getEnd());
+
+        Event expectedEvent2 = Event.today(t7, t9);
+        Assert.assertEquals(expectedEvent2.getStart(), result.get(2).getStart());
+        Assert.assertEquals(expectedEvent2.getEnd(), result.get(2).getEnd());
     }
 }
