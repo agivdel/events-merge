@@ -6,6 +6,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
 
@@ -47,7 +49,7 @@ public class MergerTest {
     @Test
     public void setToMerge_WithOnlyNotNullElement() {
         Set<Event> input = new LinkedHashSet<>();
-        input.add(new Event(t1, t8));
+        input.add(new Event(LocalDateTime.of(LocalDate.now(), t1), LocalDateTime.of(LocalDate.now(), t3)));
 
         Set<Event> result = merger.setToMerge(input);
         Assert.assertSame(input, result);
@@ -55,8 +57,7 @@ public class MergerTest {
 
     @Test
     public void setToMerge_WithNullElement() {
-        // А чо если кроме null есть и другие элементы?
-        Event e = new Event(t1, t2);
+        Event e = Event.today(t3, t6);
         Set<Event> inputWithNull = new HashSet<>();
         inputWithNull.add(null);
         inputWithNull.add(e);
@@ -69,8 +70,8 @@ public class MergerTest {
 
     @Test
     public void setToMerge_WithoutOverlap() {
-        Event e1 = new Event(t2, t4);
-        Event e2 = new Event(t1, t2);
+        Event e1 = new Event(LocalDateTime.of(LocalDate.now(), t1), LocalDateTime.of(LocalDate.now(), t8));
+        Event e2 = Event.today(t8, t9);
         Set<Event> eventSet = Set.of(e1, e2);
 
         Set<Event> notMergedSet = new Merger().setToMerge(eventSet);
@@ -80,27 +81,25 @@ public class MergerTest {
     @Test
     public void setToMerge_WithOverlap() {
         Set<Event> eventSet = new TreeSet<>();
-        eventSet.add(new Event(t1, t2));
-        eventSet.add(new Event(t2, t5));
-        eventSet.add(new Event(t4, t7));
-        eventSet.add(new Event(t7, t9));
+        eventSet.add(Event.today(t1, t2));
+        eventSet.add(Event.today(t2, t5));
+        eventSet.add(Event.today(t4, t7));
+        eventSet.add(Event.today(t7, t9));
 
         Set<Event> mergedSet = merger.setToMerge(eventSet);
         List<Event> result = new ArrayList<>(mergedSet);
 
         Assert.assertEquals(3, result.size());
 
-        //То же самое - где проверка ивентов?
-        //TODO переопределить методы сравнения Event
-        Event expectedEvent0 = new Event(t1, t2);
+        Event expectedEvent0 = Event.today(t1, t2);
         Assert.assertEquals(expectedEvent0.getStart(), result.get(0).getStart());
         Assert.assertEquals(expectedEvent0.getEnd(), result.get(0).getEnd());
 
-        Event expectedEvent1 = new Event(t2, t7);
+        Event expectedEvent1 = Event.today(t2, t7);
         Assert.assertEquals(expectedEvent1.getStart(), result.get(1).getStart());
         Assert.assertEquals(expectedEvent1.getEnd(), result.get(1).getEnd());
 
-        Event expectedEvent2 = new Event(t7, t9);
+        Event expectedEvent2 = Event.today(t7, t9);
         Assert.assertEquals(expectedEvent2.getStart(), result.get(2).getStart());
         Assert.assertEquals(expectedEvent2.getEnd(), result.get(2).getEnd());
     }
