@@ -1,7 +1,6 @@
 package agivdel.eventsMerge;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -12,7 +11,6 @@ import java.time.LocalTime;
 import java.util.*;
 
 public class MergerTest {
-    Merger merger;
 
     private final LocalTime t1 = LocalTime.of(10, 0);
     private final LocalTime t2 = LocalTime.of(10, 30);
@@ -27,22 +25,17 @@ public class MergerTest {
     @Rule
     public ExpectedException expectedEx = ExpectedException.none();
 
-    @Before
-    public void beforeTest() {
-        merger = new Merger();
-    }
-
     @Test
     public void setToMerge_WithNullSet() {
         expectedEx.expect(IllegalArgumentException.class);
         expectedEx.expectMessage("The eventSet can't be null.");
-        merger.setToMerge(null);
+        Merger.setToMerge(null);
     }
 
     @Test
     public void setToMerge_WithEmptySet() {
         Set<Event> input = new HashSet<>();
-        Set<Event> result = merger.setToMerge(input);
+        Set<Event> result = Merger.setToMerge(input);
         Assert.assertSame(result, input);
     }
 
@@ -51,7 +44,7 @@ public class MergerTest {
         Set<Event> input = new LinkedHashSet<>();
         input.add(new Event(LocalDateTime.of(LocalDate.now(), t1), LocalDateTime.of(LocalDate.now(), t3)));
 
-        Set<Event> result = merger.setToMerge(input);
+        Set<Event> result = Merger.setToMerge(input);
         Assert.assertSame(input, result);
     }
 
@@ -62,7 +55,7 @@ public class MergerTest {
         inputWithNull.add(null);
         inputWithNull.add(e);
 
-        Set<Event> result = merger.setToMerge(inputWithNull);
+        Set<Event> result = Merger.setToMerge(inputWithNull);
         Assert.assertNotSame(result, inputWithNull);
         Assert.assertEquals(1, result.size());
         Assert.assertEquals(e, result.stream().findFirst().get());
@@ -74,7 +67,7 @@ public class MergerTest {
         Event e2 = Event.today(t8, t9);
         Set<Event> eventSet = Set.of(e1, e2);
 
-        Set<Event> notMergedSet = new Merger().setToMerge(eventSet);
+        Set<Event> notMergedSet = Merger.setToMerge(eventSet);
         Assert.assertEquals(eventSet, notMergedSet);
     }
 
@@ -86,7 +79,7 @@ public class MergerTest {
         eventSet.add(Event.today(t4, t7));
         eventSet.add(Event.today(t7, t9));
 
-        Set<Event> mergedSet = merger.setToMerge(eventSet);
+        Set<Event> mergedSet = Merger.setToMerge(eventSet);
         List<Event> result = new ArrayList<>(mergedSet);
 
         Assert.assertEquals(3, result.size());
